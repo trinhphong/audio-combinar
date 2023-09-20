@@ -1,23 +1,24 @@
 import { UploadedFile } from "express-fileupload";
-import temp from 'temp';
-const audioconcat = require("audioconcat");
+import temp from "temp";
+import ffmpeg, { FfmpegCommand } from "fluent-ffmpeg";
+
+const OUTPUT_PATH = "./outputs/combined.mp3";
 
 export class AudioCombinar {
-  combine(files: UploadedFile[]) {
+  combine(files: UploadedFile[]): FfmpegCommand {
     temp.track();
-    const paths: string[] = [];
+    const paths: (string | Buffer)[] = [];
 
     for (const file of files) {
       const stream = temp.createWriteStream();
       stream.write(file.data);
-      paths.push(stream.path as string)
+      paths.push(stream.path);
       stream.end();
     }
 
-    audioconcat(paths)
-      .concat("./outputs/combined.mp3")
-      .on("error", function (err: Error) {
-        console.error("Error:", err);
-      });
+    const filter = "concat:" + paths.join("|");
+    const renderer = ffmpeg().input(filter).outputOptions("-acodec copy");
+
+    return renderer.save(OUTPUT_PATH);
   }
 }

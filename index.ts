@@ -17,7 +17,7 @@ app.use(fileupload());
 
 app.use("/audio", audioRouter);
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server');
 });
 
